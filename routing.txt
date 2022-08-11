@@ -1,0 +1,7 @@
+1. Browser GET / —> server (index.js) —> search "public" folder
+
+"/" === "public/index.html"
+"index.html" === "public/index.html"
+"app.js" === "public/app.js"
+
+2. Browser GET /update —> server (index.js) —> app.get('/update', ...) handler
