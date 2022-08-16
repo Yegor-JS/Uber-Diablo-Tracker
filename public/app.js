@@ -127,7 +127,7 @@ const notifiyAboutChanges = async () => {
         j++;
       });
 
-        if (!(JSON.stringify(oldData)==JSON.stringify(newData))) {
+        if (!(JSON.stringify(oldData) === JSON.stringify(newData))) {
           const changedData = newData.filter((element, index) => 
             element.progress !== oldData[index].progress
           );
