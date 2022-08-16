@@ -1,15 +1,10 @@
-const UPDATE_TIMEOUT = 60 * 1000;
+const UPDATE_TIMEOUT = 5 * 1000;
 
 const regions = document.getElementById('regions');
 const modes = document.getElementById('modes');
 const hardcorness = document.getElementById('hardcorness');
 
 const possibleRegions = ["America", "Europe", "Asia"];
-
-let nonLadderSoftcore = [];
-let nonLadderHardcore = [];
-let ladderSoftcore = [];
-let ladderHardcore = [];
 
 const getResults = async () => {
   const response = await fetch("/api/data");
@@ -19,6 +14,12 @@ const getResults = async () => {
 
 const updateTable = async () => {
   const allRegions = await getResults();
+
+  let nonLadderSoftcore = [];
+  let nonLadderHardcore = [];
+  let ladderSoftcore = [];
+  let ladderHardcore = [];
+
   
   allRegions.forEach((element) => {
     if (element.ladder === "2" && element.hc === "2") {
@@ -40,7 +41,7 @@ const updateTable = async () => {
   const row = document.createElement("tr");
   table.appendChild(row);
 
-  for (let j = 0; j < possibleRegions.length; j++) {
+  for ( j = 0; j < possibleRegions.length; j++) {
     const cell = document.createElement("td");
     cell.innerText = `${possibleRegions[j]}: ${regionData[j].progress}/6,`;
     if (j === (possibleRegions.length - 1)) {
@@ -57,10 +58,23 @@ const updateTable = async () => {
   createTable(nonLadderHardcore, "nlhc");
   createTable(ladderSoftcore, "lsc");
   createTable(ladderHardcore, "lhc");
-  
+
 };
 
-updateTable();
+const renewFrontPage = () => {
+  if ((document.getElementsByTagName('table').length)) {
+    let tables = document.querySelectorAll('table');
+    for (element of tables) { element.remove() };
+  };
+
+  updateTable();
+
+  setTimeout(() => {
+    renewFrontPage();
+  }, 5000);
+};
+
+renewFrontPage();
 
 const  showResult = async () => {
 
@@ -77,7 +91,7 @@ const  showResult = async () => {
   const formOptions = ["regions", "modes", "hardcorness"];
   const finalOptions = [];
 
-  for (let j = 0; j < formOptions.length; j++) {
+  for ( j = 0; j < formOptions.length; j++) {
     const select = document.getElementById(formOptions[j]);
     const selectedText = select.options[select.selectedIndex].text;
     finalOptions.push(selectedText);
@@ -107,21 +121,21 @@ form.addEventListener('submit', showResult);
 
 // NOTIFICATIONS PART BEGINS!
 
-let oldData = [];
-let newData = [];
+  oldData = [];
+  newData = [];
 
 const notifiyAboutChanges = async () => {
 
   const data = await getResults();
 
   if (!oldData[0]) {
-    let j = 0;
+      j = 0;
     data.forEach((element) => {
       oldData.push(element);
       j++;
     });
   } else {
-      let j = 0;
+        j = 0;
       data.forEach((element) => {
         newData.push(element);
         j++;
@@ -136,7 +150,7 @@ const notifiyAboutChanges = async () => {
           const isLadder = ['Ladder', 'Non Ladder']
           const isHardcore = ['Hardcore', 'Softcore']
 
-          let changedDataToDisplay = '';
+            changedDataToDisplay = '';
           
           changedData.forEach((element) => {
             changedDataToDisplay =
@@ -153,13 +167,16 @@ const notifiyAboutChanges = async () => {
 
           if (changedData.length === 1) {
             isPlural = "There's a change:";
+            notification = new Notification(`${isPlural} ${changedDataToDisplay}`);
           } else {
-            isPlural = "There are changes:";
+            isPlural = "There are multiple changes!";
+            notification = new Notification(isPlural);
+
           };
 
-          let notification = new Notification(`${isPlural} ${changedDataToDisplay}`);
+          console.log(Date()+':');
           console.log(isPlural, changedDataToDisplay);
-
+          
           oldData = JSON.parse(JSON.stringify(newData));
           newData = [];
         } else {
@@ -173,7 +190,7 @@ const notifiyAboutChanges = async () => {
 };
 
 const requestNotificationPermission = () => {
-  let notificationTurnedOn = false;
+    notificationTurnedOn = false;
 
   if (!("Notification" in window)) {
     alert("This browser does not support desktop notification");
