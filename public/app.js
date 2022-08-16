@@ -148,15 +148,16 @@ const notifiyAboutChanges = async () => {
 
           changedDataToDisplay = changedDataToDisplay.substring(0, changedDataToDisplay.length-2) + ".";
           
+          let isPlural;
+
           if (changedData.length = 1) {
-            let isPlural = "There's a change:";
+            isPlural = "There's a change:";
           } else {
-            let isPlural = "There are changes:";
+            isPlural = "There are changes:";
           };
 
           let notification = new Notification(`${isPlural} ${changedDataToDisplay}`);
           console.log(isPlural, changedDataToDisplay);
-
 
           oldData = JSON.parse(JSON.stringify(newData));
           newData = [];
