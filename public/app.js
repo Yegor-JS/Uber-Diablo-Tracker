@@ -1,4 +1,4 @@
-const UPDATE_TIMEOUT = 5 * 1000;
+const UPDATE_TIMEOUT = 30 * 1000;
 
 const regions = document.getElementById('regions');
 const modes = document.getElementById('modes');
@@ -71,7 +71,7 @@ const renewFrontPage = () => {
 
   setTimeout(() => {
     renewFrontPage();
-  }, 5000);
+  }, UPDATE_TIMEOUT);
 };
 
 renewFrontPage();
