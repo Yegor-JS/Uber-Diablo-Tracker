@@ -127,10 +127,11 @@ const notifiyAboutChanges = async () => {
         j++;
       });
 
-        if (!(JSON.stringify(oldData) === JSON.stringify(newData))) {
-          const changedData = newData.filter((element, index) => 
-            element.progress !== oldData[index].progress
-          );
+      const changedData = newData.filter((element, index) => 
+        element.progress !== oldData[index].progress
+      );
+
+      if (changedData.length > 0) {
 
           const isLadder = ['Ladder', 'Non Ladder']
           const isHardcore = ['Hardcore', 'Softcore']
@@ -150,7 +151,7 @@ const notifiyAboutChanges = async () => {
           
           let isPlural;
 
-          if (changedData.length = 1) {
+          if (changedData.length === 1) {
             isPlural = "There's a change:";
           } else {
             isPlural = "There are changes:";
