@@ -1,6 +1,10 @@
+const UPDATE_TIMEOUT = 60 * 1000;
+
 const regions = document.getElementById('regions');
 const modes = document.getElementById('modes');
 const hardcorness = document.getElementById('hardcorness');
+
+const possibleRegions = ["America", "Europe", "Asia"];
 
 let nonLadderSoftcore = [];
 let nonLadderHardcore = [];
@@ -12,8 +16,6 @@ const getResults = async () => {
   const data = await response.json();
   return data;
 }
-
-const UPDATE_TIMEOUT = 60 * 1000;
 
 const updateTable = async () => {
   const allRegions = await getResults();
@@ -28,7 +30,7 @@ const updateTable = async () => {
     } else if (element.ladder === "1" && element.hc === "1") {
       ladderHardcore.push(element);
     } else {
-      throw new Error("не понимать");
+      throw new Error("dunnolol");
     }
   });
 
@@ -38,11 +40,12 @@ const updateTable = async () => {
   const row = document.createElement("tr");
   table.appendChild(row);
 
-  const possibleRegions = ["America", "Europe", "Asia"];
-
   for (let j = 0; j < possibleRegions.length; j++) {
     const cell = document.createElement("td");
     cell.innerText = `${possibleRegions[j]}: ${regionData[j].progress}/6,`;
+    if (j === (possibleRegions.length - 1)) {
+      cell.innerText = cell.innerText.replace(',', '.');
+      }
     row.appendChild(cell);
     }
 
@@ -97,42 +100,94 @@ const  showResult = async () => {
   } else {
     document.getElementById('form').querySelector('td').innerText = whatUserWantedFormated;
   }
+  };
 
-};
 
 form.addEventListener('submit', showResult);
 
-// const notifiyAboutChangesOnceInAMinute = async () => {
-//   const response = await fetch("/update");
-//   const data = await response.json();
-//   if (data) {
-//     updateTable(data);
-//     let notification = new Notification("Hi there!");
-//   }
+// NOTIFICATIONS PART BEGINS!
 
-//   setTimeout(() => {
-//     notifiyAboutChangesOnceInAMinute();
-//   }, UPDATE_TIMEOUT);
-// };
+let oldData = [];
+let newData = [];
 
-// const requestNotificationPermissions = () => {
-//   let notificationTurnedOn = false;
+const notifiyAboutChanges = async () => {
 
-//   if (!("Notification" in window)) {
-//     alert("This browser does not support desktop notification");
-//   } else if (Notification.permission === "granted") {
-//     notificationTurnedOn = true;
-//   } else if (Notification.permission !== "denied") {
-//     Notification.requestPermission().then(function (permission) {
-//       if (permission === "granted") {
-//         notificationTurnedOn = true;
-//       }
-//     });
-//   }
+  const data = await getResults();
 
-//   if (notificationTurnedOn) {
-//     notifiyAboutChangesOnceInAMinute();
-//   }
-// };
+  if (!oldData[0]) {
+    let j = 0;
+    data.forEach((element) => {
+      oldData.push(element);
+      j++;
+    });
+  } else {
+      let j = 0;
+      data.forEach((element) => {
+        newData.push(element);
+        j++;
+      });
 
-// requestNotificationPermissions();
+        if (!(JSON.stringify(oldData)==JSON.stringify(newData))) {
+          const changedData = newData.filter((element, index) => 
+            element.progress !== oldData[index].progress
+          );
+
+          const isLadder = ['Ladder', 'Non Ladder']
+          const isHardcore = ['Hardcore', 'Softcore']
+
+          let changedDataToDisplay = '';
+          
+          changedData.forEach((element) => {
+            changedDataToDisplay =
+            changedDataToDisplay +
+            isLadder[element.ladder - 1] + ', ' +
+            isHardcore[element.hc - 1] + ', ' +
+            possibleRegions[element.region - 1] + ': ' +
+            element.progress + '/6; ';
+          });
+
+          changedDataToDisplay = changedDataToDisplay.substring(0, changedDataToDisplay.length-2) + ".";
+          
+          if (changedData.length = 1) {
+            let isPlural = "There's a change:";
+          } else {
+            let isPlural = "There are changes:";
+          };
+
+          let notification = new Notification(`${isPlural} ${changedDataToDisplay}`);
+          console.log(isPlural, changedDataToDisplay);
+
+
+          oldData = JSON.parse(JSON.stringify(newData));
+          newData = [];
+        } else {
+            newData = [];
+      }
+    }
+
+  setTimeout(() => {
+    notifiyAboutChanges();
+  }, UPDATE_TIMEOUT);
+};
+
+const requestNotificationPermission = () => {
+  let notificationTurnedOn = false;
+
+  if (!("Notification" in window)) {
+    alert("This browser does not support desktop notification");
+  } else if (Notification.permission === "granted") {
+    notificationTurnedOn = true;
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then(function (permission) {
+      if (permission === "granted") {
+        notificationTurnedOn = true;
+      }
+    });
+  }
+
+  if (notificationTurnedOn) {
+    notifiyAboutChanges();
+  }
+};
+
+requestNotificationPermission();
