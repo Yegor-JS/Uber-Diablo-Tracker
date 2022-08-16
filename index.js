@@ -23,7 +23,7 @@ async function collectDataOnceInAMinute() {
   currentData = await fetchData();
   setTimeout(() => {
     collectDataOnceInAMinute();
-  }, 60000);
+  }, 30000);
 }
 collectDataOnceInAMinute();
 
