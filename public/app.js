@@ -1,4 +1,4 @@
-const UPDATE_TIMEOUT = 30 * 1000;
+const UPDATE_TIMEOUT = 2 * 1000;
 
 const regions = document.getElementById('regions');
 const modes = document.getElementById('modes');
@@ -12,15 +12,35 @@ const getResults = async () => {
   return data;
 }
 
-const updateTable = async () => {
+const createTable = (mode) => {
+
+  const table = document.createElement("table");
+  const row = document.createElement("tr");
+  table.appendChild(row);
+
+    for ( j = 0; j < possibleRegions.length; j++) {
+      const cell = document.createElement("td");
+      row.appendChild(cell);
+    }
+
+  const tableRoot = document.getElementById(mode);
+  tableRoot.appendChild(table);
+};
+
+createTable("nlsc");
+createTable("nlhc");
+createTable("lsc");
+createTable("lhc");
+
+let nonLadderSoftcore = [];
+let nonLadderHardcore = [];
+let ladderSoftcore = [];
+let ladderHardcore = [];
+
+const updateCellsInnerText = async (regionData, mode) => {
+
   const allRegions = await getResults();
 
-  let nonLadderSoftcore = [];
-  let nonLadderHardcore = [];
-  let ladderSoftcore = [];
-  let ladderHardcore = [];
-
-  
   allRegions.forEach((element) => {
     if (element.ladder === "2" && element.hc === "2") {
       nonLadderSoftcore.push(element);
@@ -35,46 +55,40 @@ const updateTable = async () => {
     }
   });
 
-  const createTable = (regionData, modeAndRegion) => {
+  const tableRoot = document.getElementById(mode);
+  const cells = tableRoot.querySelectorAll("td");
 
-  const table = document.createElement("table");
-  const row = document.createElement("tr");
-  table.appendChild(row);
+  let j = 0;
 
-  for ( j = 0; j < possibleRegions.length; j++) {
-    const cell = document.createElement("td");
-    cell.innerText = `${possibleRegions[j]}: ${regionData[j].progress}/6,`;
+  for (let element of cells) {
+    element.innerText = `${possibleRegions[j]}: ${regionData[j].progress}/6,`;
     if (j === (possibleRegions.length - 1)) {
-      cell.innerText = cell.innerText.replace(',', '.');
-      }
-    row.appendChild(cell);
+      element.innerText = element.innerText.replace(',', '.');
     }
-
-  const tableRoot = document.getElementById(modeAndRegion);
-  tableRoot.appendChild(table);
+    j++;
   }
 
-  createTable(nonLadderSoftcore, "nlsc");
-  createTable(nonLadderHardcore, "nlhc");
-  createTable(ladderSoftcore, "lsc");
-  createTable(ladderHardcore, "lhc");
+  nonLadderSoftcore = [];
+  nonLadderHardcore = [];
+  ladderSoftcore = [];
+  ladderHardcore = [];
 
 };
 
-const renewFrontPage = () => {
-  if ((document.getElementsByTagName('table').length)) {
-    let tables = document.querySelectorAll('table');
-    for (element of tables) { element.remove() };
-  };
+const refreshTable = () => {
 
-  updateTable();
-
+  updateCellsInnerText(nonLadderSoftcore, "nlsc");
+  updateCellsInnerText(nonLadderHardcore, "nlhc");
+  updateCellsInnerText(ladderSoftcore, "lsc");
+  updateCellsInnerText(ladderHardcore, "lhc");
+  
   setTimeout(() => {
-    renewFrontPage();
+    refreshTable();
   }, UPDATE_TIMEOUT);
 };
 
-renewFrontPage();
+refreshTable();
+
 
 const  showResult = async () => {
 
@@ -118,95 +132,3 @@ const  showResult = async () => {
 
 
 form.addEventListener('submit', showResult);
-
-// NOTIFICATIONS PART BEGINS!
-
-  oldData = [];
-  newData = [];
-
-const notifiyAboutChanges = async () => {
-
-  const data = await getResults();
-
-  if (!oldData[0]) {
-      j = 0;
-    data.forEach((element) => {
-      oldData.push(element);
-      j++;
-    });
-  } else {
-        j = 0;
-      data.forEach((element) => {
-        newData.push(element);
-        j++;
-      });
-
-      const changedData = newData.filter((element, index) => 
-        element.progress !== oldData[index].progress
-      );
-
-      if (changedData.length > 0) {
-
-          const isLadder = ['Ladder', 'Non Ladder']
-          const isHardcore = ['Hardcore', 'Softcore']
-
-            changedDataToDisplay = '';
-          
-          changedData.forEach((element) => {
-            changedDataToDisplay =
-            changedDataToDisplay +
-            isLadder[element.ladder - 1] + ', ' +
-            isHardcore[element.hc - 1] + ', ' +
-            possibleRegions[element.region - 1] + ': ' +
-            element.progress + '/6; ';
-          });
-
-          changedDataToDisplay = changedDataToDisplay.substring(0, changedDataToDisplay.length-2) + ".";
-          
-          let isPlural;
-
-          if (changedData.length === 1) {
-            isPlural = "There's a change:";
-            notification = new Notification(`${isPlural} ${changedDataToDisplay}`);
-          } else {
-            isPlural = "There are multiple changes!";
-            notification = new Notification(isPlural);
-
-          };
-
-          console.log(Date()+':');
-          console.log(isPlural, changedDataToDisplay);
-          
-          oldData = JSON.parse(JSON.stringify(newData));
-          newData = [];
-        } else {
-            newData = [];
-      }
-    }
-
-  setTimeout(() => {
-    notifiyAboutChanges();
-  }, UPDATE_TIMEOUT);
-};
-
-const requestNotificationPermission = () => {
-    notificationTurnedOn = false;
-
-  if (!("Notification" in window)) {
-    alert("This browser does not support desktop notification");
-  } else if (Notification.permission === "granted") {
-    notificationTurnedOn = true;
-  } else if (Notification.permission !== "denied") {
-    Notification.requestPermission().then(function (permission) {
-      if (permission === "granted") {
-        notificationTurnedOn = true;
-      }
-    });
-  }
-
-  if (notificationTurnedOn) {
-    notifiyAboutChanges();
-  }
-};
-
-requestNotificationPermission();
