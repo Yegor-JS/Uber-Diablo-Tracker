@@ -1,4 +1,4 @@
-const UPDATE_TIMEOUT = 2 * 1000;
+const UPDATE_TIMEOUT = 30 * 1000;
 
 const regions = document.getElementById('regions');
 const modes = document.getElementById('modes');
@@ -12,7 +12,7 @@ const getResults = async () => {
   return data;
 }
 
-const createTable = (mode) => {
+const createTable = (id) => {
 
   const table = document.createElement("table");
   const row = document.createElement("tr");
@@ -23,21 +23,20 @@ const createTable = (mode) => {
       row.appendChild(cell);
     }
 
-  const tableRoot = document.getElementById(mode);
+  const tableRoot = document.getElementById(id);
   tableRoot.appendChild(table);
 };
 
-createTable("nlsc");
-createTable("nlhc");
-createTable("lsc");
-createTable("lhc");
+ids = ['nlsc', 'nlhc', 'lsc', 'lhc']
+
+ids.forEach(createTable);
 
 let nonLadderSoftcore = [];
 let nonLadderHardcore = [];
 let ladderSoftcore = [];
 let ladderHardcore = [];
 
-const updateCellsInnerText = async (regionData, mode) => {
+const updateCellsInnerText = async (regionData, id) => {
 
   const allRegions = await getResults();
 
@@ -55,7 +54,7 @@ const updateCellsInnerText = async (regionData, mode) => {
     }
   });
 
-  const tableRoot = document.getElementById(mode);
+  const tableRoot = document.getElementById(id);
   const cells = tableRoot.querySelectorAll("td");
 
   let j = 0;
@@ -77,10 +76,22 @@ const updateCellsInnerText = async (regionData, mode) => {
 
 const refreshTable = () => {
 
-  updateCellsInnerText(nonLadderSoftcore, "nlsc");
-  updateCellsInnerText(nonLadderHardcore, "nlhc");
-  updateCellsInnerText(ladderSoftcore, "lsc");
-  updateCellsInnerText(ladderHardcore, "lhc");
+  const possibleModes = [
+    nonLadderSoftcore,
+    nonLadderHardcore,
+    ladderSoftcore,
+    ladderHardcore
+  ]
+
+  possibleModes.forEach((element, i) => {
+      updateCellsInnerText(element, ids[i]);
+  });
+
+  // A straightforward, but less fancy way of doing it:
+  // updateCellsInnerText(nonLadderSoftcore, "nlsc");
+  // updateCellsInnerText(nonLadderHardcore, "nlhc");
+  // updateCellsInnerText(ladderSoftcore, "lsc");
+  // updateCellsInnerText(ladderHardcore, "lhc");
   
   setTimeout(() => {
     refreshTable();
@@ -129,6 +140,5 @@ const  showResult = async () => {
     document.getElementById('form').querySelector('td').innerText = whatUserWantedFormated;
   }
   };
-
 
 form.addEventListener('submit', showResult);
