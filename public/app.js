@@ -18,10 +18,10 @@ const createTable = (id) => {
   const row = document.createElement("tr");
   table.appendChild(row);
 
-    for ( j = 0; j < possibleRegions.length; j++) {
-      const cell = document.createElement("td");
-      row.appendChild(cell);
-    }
+  for (j = 0; j < possibleRegions.length; j++) {
+    const cell = document.createElement("td");
+    row.appendChild(cell);
+  }
 
   const tableRoot = document.getElementById(id);
   tableRoot.appendChild(table);
@@ -84,7 +84,7 @@ const refreshTable = () => {
   ]
 
   possibleModes.forEach((element, i) => {
-      updateCellsInnerText(element, ids[i]);
+    updateCellsInnerText(element, ids[i]);
   });
 
   // A straightforward, but less fancy way of doing it:
@@ -92,7 +92,7 @@ const refreshTable = () => {
   // updateCellsInnerText(nonLadderHardcore, "nlhc");
   // updateCellsInnerText(ladderSoftcore, "lsc");
   // updateCellsInnerText(ladderHardcore, "lhc");
-  
+
   setTimeout(() => {
     refreshTable();
   }, UPDATE_TIMEOUT);
@@ -100,23 +100,22 @@ const refreshTable = () => {
 
 refreshTable();
 
-
-const  showResult = async () => {
+const showResult = async () => {
 
   event.preventDefault();
 
   const data = await getResults();
 
-  const whatUserWanted = data.find(({region, ladder, hc}) =>
-  region === regions.value &&
-  ladder === modes.value &&
-  hc === hardcorness.value
+  const whatUserWanted = data.find(({ region, ladder, hc }) =>
+    region === regions.value &&
+    ladder === modes.value &&
+    hc === hardcorness.value
   );
 
   const formOptions = ["regions", "modes", "hardcorness"];
   const finalOptions = [];
 
-  for ( j = 0; j < formOptions.length; j++) {
+  for (j = 0; j < formOptions.length; j++) {
     const select = document.getElementById(formOptions[j]);
     const selectedText = select.options[select.selectedIndex].text;
     finalOptions.push(selectedText);
@@ -126,19 +125,19 @@ const  showResult = async () => {
 
   if (!document.getElementById('form').querySelector('table')) {
 
-  const table = document.createElement("table");
-  const row = document.createElement("tr");
-  table.appendChild(row);
+    const table = document.createElement("table");
+    const row = document.createElement("tr");
+    table.appendChild(row);
 
-  const cell = document.createElement("td");
-  cell.innerText = whatUserWantedFormated;
-  row.appendChild(cell);
+    const cell = document.createElement("td");
+    cell.innerText = whatUserWantedFormated;
+    row.appendChild(cell);
 
-  const tableRoot = document.getElementById('form');
-  tableRoot.appendChild(table);
+    const tableRoot = document.getElementById('form');
+    tableRoot.appendChild(table);
   } else {
     document.getElementById('form').querySelector('td').innerText = whatUserWantedFormated;
   }
-  };
+};
 
 form.addEventListener('submit', showResult);
