@@ -60,7 +60,13 @@ const updateCellsInnerText = async (regionData, id) => {
   let j = 0;
 
   for (let element of cells) {
-    element.innerText = `${possibleRegions[j]}: ${regionData[j].progress}/6,`;
+    let currentProgress;
+    if (regionData[j].progress > 1) {
+      currentProgress = `<b>${regionData[j].progress}</b>`
+    } else {
+      currentProgress = regionData[j].progress;
+    }
+    element.innerHTML = `${possibleRegions[j]}: ${currentProgress}/6,`;
     if (j === (possibleRegions.length - 1)) {
       element.innerText = element.innerText.replace(',', '.');
     }
