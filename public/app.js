@@ -68,7 +68,7 @@ const updateCellsInnerText = async (regionData, id) => {
     }
     element.innerHTML = `${possibleRegions[j]}: ${currentProgress}/6,`;
     if (j === (possibleRegions.length - 1)) {
-      element.innerText = element.innerText.replace(',', '.');
+      element.innerHTML = element.innerHTML.replace(',', '.');
     }
     j++;
   }

@@ -14,7 +14,7 @@ const fetchData = async () => {
   // Faking response for testing purposes:
   // allRegions[0].reporter_id = 333
   // allRegions[0].progress = 5
-  // allRegions[8].progress = 9
+  // allRegions[10].progress = 9
   return allRegions;
 };
 
