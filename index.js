@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const axios = require("axios");
+const fs = require('fs');
 
 app.use(express.static("./public"));
 
@@ -27,11 +28,44 @@ async function collectDataOnceInAMinute() {
 }
 collectDataOnceInAMinute();
 
-
 app.get("/api/data", async (req, res) => {
   const data = currentData;
   res.send(data);
 });
+
+// Creating logs
+const serverLogs = 'server_logs.log'
+const pathToLogs = `./${serverLogs}`;
+
+const createLogs = () => {
+  let lineToInsert;
+  if (!fs.existsSync(pathToLogs)) {
+    lineToInsert = Date() + ' ' + 'Logging begins';
+  } else {
+    lineToInsert = `\n${Date() + ' ' + JSON.stringify(currentData)}`;
+  };
+  const newLine = () => fs.appendFile(pathToLogs, lineToInsert, (err) => {
+    if (err) throw new Error('Something went wrong with the logging');
+  });
+  newLine();
+
+  // Deleting logs if the file is too big
+  if (fs.existsSync(pathToLogs)) {
+    const stats = fs.statSync(pathToLogs)
+    const fileSizeInBytes = stats.size;
+    const fileSizeIngiGigabytes = fileSizeInBytes / (1024 * 1024 * 1024);
+    if (fileSizeIngiGigabytes > 1) {
+      fs.unlink(pathToLogs, (err) => {
+        if (err) throw new Error;
+      });
+    }
+  };
+  setTimeout(() => {
+    createLogs();
+  }, 30000);
+};
+createLogs();
+// Done with creating logs
 
 app.listen(80, () => {
 });
