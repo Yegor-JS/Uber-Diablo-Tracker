@@ -21,7 +21,9 @@ const fetchData = async () => {
 
 let currentData = null;
 async function collectDataOnceInAMinute() {
-  currentData = await fetchData();
+  dataForLogging = await fetchData();
+  currentData = dataForLogging;
+  createLogs(dataForLogging);
   setTimeout(() => {
     collectDataOnceInAMinute();
   }, 30000);
@@ -29,21 +31,25 @@ async function collectDataOnceInAMinute() {
 collectDataOnceInAMinute();
 
 app.get("/api/data", async (req, res) => {
-  const data = currentData;
-  res.send(data);
+  res.send(currentData);
 });
 
 // Creating logs
-const serverLogs = 'server_logs.log'
-const pathToLogs = `./${serverLogs}`;
+const createLogs = (dataForLogging) => {
 
-const createLogs = () => {
-  let lineToInsert;
-  if (!fs.existsSync(pathToLogs)) {
-    lineToInsert = Date() + ' ' + 'Logging begins';
-  } else {
-    lineToInsert = `\n${Date() + ' ' + JSON.stringify(currentData)}`;
+  const serverLogs = 'server_logs.log'
+  const pathToLogs = `./${serverLogs}`;
+
+  const isNewLine = () => {
+    if (!fs.existsSync(pathToLogs)) {
+      return Date() + ' ';
+    } else {
+      return `\n${Date()} `;
+    }
   };
+
+  lineToInsert = isNewLine() + JSON.stringify(dataForLogging);
+
   const newLine = () => fs.appendFile(pathToLogs, lineToInsert, (err) => {
     if (err) throw new Error('Something went wrong with the logging');
   });
@@ -60,11 +66,7 @@ const createLogs = () => {
       });
     }
   };
-  setTimeout(() => {
-    createLogs();
-  }, 30000);
 };
-createLogs();
 // Done with creating logs
 
 app.listen(80, () => {
