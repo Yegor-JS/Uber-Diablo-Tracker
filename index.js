@@ -5,34 +5,30 @@ const fs = require('fs');
 
 app.use(express.static("./public"));
 
-let errorsWhileGettingData;
-
 const fetchData = async () => {
-
-  errorsWhileGettingData ?? null;
-
-  try {
-    const response = await axios.get("https://diablo2.io/dclone_api.php?", {
-      params: {
-        sk: "r",
-      },
-    });
-    allRegions = response.data;
-    // Faking response for testing purposes:
-    // allRegions[0].reporter_id = 333
-    // allRegions[0].progress = 5
-    // allRegions[10].progress = 9
-    return allRegions;
-  } catch (error) {
-    errorsWhileGettingData = error;
-  }
-
+  const response = await axios.get("https://diablo2.io/dclone_api.php?", {
+    params: {
+      sk: "r",
+    },
+  });
+  allRegions = response.data;
+  // Faking response for testing purposes:
+  // allRegions[0].reporter_id = 333
+  // allRegions[0].progress = 5
+  // allRegions[10].progress = 9
+  return allRegions;
 };
 
 let currentData = null;
 async function collectDataOnceInAMinute() {
-  dataForLogging = await fetchData();
-  currentData = dataForLogging;
+  let dataForLogging;
+
+  try {
+    dataForLogging = await fetchData();
+    currentData = dataForLogging;
+  } catch (error) {
+    dataForLogging = error;
+  }
   createLogs(dataForLogging);
   setTimeout(() => {
     collectDataOnceInAMinute();
@@ -58,9 +54,7 @@ const createLogs = (dataForLogging) => {
     }
   };
 
-  const isThereAnError = errorsWhileGettingData ? errorsWhileGettingData : dataForLogging;
-
-  lineToInsert = isNewLine() + JSON.stringify(isThereAnError);
+  lineToInsert = isNewLine() + JSON.stringify(dataForLogging);
 
   const newLine = () => fs.appendFile(pathToLogs, lineToInsert, (err) => {
     if (err) throw new Error('Something went wrong with the logging');
