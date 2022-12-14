@@ -5,18 +5,28 @@ const fs = require('fs');
 
 app.use(express.static("./public"));
 
+let errorsWhileGettingData;
+
 const fetchData = async () => {
-  const response = await axios.get("https://diablo2.io/dclone_api.php?", {
-    params: {
-      sk: "r",
-    },
-  });
-  allRegions = response.data;
-  // Faking response for testing purposes:
-  // allRegions[0].reporter_id = 333
-  // allRegions[0].progress = 5
-  // allRegions[10].progress = 9
-  return allRegions;
+
+  errorsWhileGettingData ?? null;
+
+  try {
+    const response = await axios.get("https://diablo2.io/dclone_api.php?", {
+      params: {
+        sk: "r",
+      },
+    });
+    allRegions = response.data;
+    // Faking response for testing purposes:
+    // allRegions[0].reporter_id = 333
+    // allRegions[0].progress = 5
+    // allRegions[10].progress = 9
+    return allRegions;
+  } catch (error) {
+    errorsWhileGettingData = error;
+  }
+
 };
 
 let currentData = null;
@@ -48,7 +58,9 @@ const createLogs = (dataForLogging) => {
     }
   };
 
-  lineToInsert = isNewLine() + JSON.stringify(dataForLogging);
+  const isThereAnError = errorsWhileGettingData ? errorsWhileGettingData : dataForLogging;
+
+  lineToInsert = isNewLine() + JSON.stringify(isThereAnError);
 
   const newLine = () => fs.appendFile(pathToLogs, lineToInsert, (err) => {
     if (err) throw new Error('Something went wrong with the logging');
