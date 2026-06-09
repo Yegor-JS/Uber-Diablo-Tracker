@@ -1,4 +1,4 @@
-const UPDATE_TIMEOUT = 30 * 1000;
+const UPDATE_TIMEOUT = 60 * 1000;
 
 const regions = document.getElementById('regions');
 const modes = document.getElementById('modes');
