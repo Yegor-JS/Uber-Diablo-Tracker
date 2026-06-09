@@ -32,7 +32,7 @@ async function collectDataOnceInAMinute() {
   createLogs(dataForLogging);
   setTimeout(() => {
     collectDataOnceInAMinute();
-  }, 30000);
+  }, 60000);
 }
 collectDataOnceInAMinute();
 
